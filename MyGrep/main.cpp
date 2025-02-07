@@ -5,7 +5,7 @@ int main() {
 	std::string longString, search;
 	try {
 		std::cout << "Give a string to search from: ";
-		if (!std::getline(std::cin, longString) || search.empty()) {
+		if (!std::getline(std::cin, longString) || longString.empty()) {
 			throw std::runtime_error("Invalid input");
 		}
 
