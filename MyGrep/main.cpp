@@ -1,8 +1,10 @@
 #include<iostream>
 #include<string>
 #include<fstream>
+#include<stdexcept>
+#include<algorithm>
 
-void findFromFile(std::string search, std::string fileName, bool showCount, bool lineNo) {
+void findFromFile(std::string search, std::string fileName, bool occurrences, bool lineNo, bool reverse, bool ignore) {
 
 	std::ifstream file;
 	std::string line;
@@ -13,21 +15,47 @@ void findFromFile(std::string search, std::string fileName, bool showCount, bool
 		throw std::runtime_error(std::string("Could not open file ") + fileName + "\n");
 	}
 
+	std::string tempSearch = search;
+
 	while (std::getline(file, line)) {
 		lineNum++;
-		size_t position = line.find(search);
-		if (position != std::string::npos) {
-			if (lineNo) {
-				std::cout << lineNum << ": ";
-			}
-			std::cout << line << std::endl;
-			lineCount++;
+		std::string tempLine = line;
+		if (ignore) {
+			std::transform(tempSearch.begin(), tempSearch.end(), tempSearch.begin(), ::tolower);
+			std::transform(tempLine.begin(), tempLine.end(), tempLine.begin(), ::tolower);
+	
 		}
+		size_t position = tempLine.find(tempSearch);
+
+		if (reverse) {
+			if (position == std::string::npos) {
+				if (lineNo) {
+					std::cout << lineNum << ": ";
+				}
+				std::cout << line << std::endl;
+				lineCount++;
+			}
+		}
+		else {
+			if (position != std::string::npos) {
+				if (lineNo) {
+					std::cout << lineNum << ": ";
+				}
+				std::cout << line << std::endl;
+				lineCount++;
+			}
+		}
+		
 	}
 	file.close();
 
-	if (showCount) {
-		std::cout << "Total number of lines found: " << lineCount << std::endl;
+	if (occurrences) {
+		if (reverse) {
+			std::cout << "Total number of lines NOT containing: " << search << " " << lineCount << std::endl;
+		}
+		else {
+			std::cout << "Total number of lines containing: " << search << " " << lineCount << std::endl;
+		}
 	}
 }
 
@@ -54,7 +82,7 @@ void findInString() {
 int main(int argc, char* argv[]) {
 
 	std::string search, fileName;
-	bool lineNo = false, showCount = false;
+	bool lineNo = false, occurrences = false, reverse = false, ignore = false;
 
 	try {
 		if (argc == 1) {
@@ -63,6 +91,7 @@ int main(int argc, char* argv[]) {
 		else if (argc == 3) {
 			search = argv[1];
 			fileName = argv[2];
+			findFromFile(search, fileName, occurrences, lineNo, reverse, ignore);
 		}
 		else if (argc == 4) {
 			std::string options = argv[1];
@@ -71,28 +100,29 @@ int main(int argc, char* argv[]) {
 			}
 			for (char c : options.substr(2)) {
 				if (c == 'o') {
-					showCount = true;
+					occurrences = true;
 				}
 				else if (c == 'l') {
 					lineNo = true;
+				}
+				else if (c == 'r') {
+					reverse = true;
+					}
+				else if (c == 'i') {
+					ignore = true;
 				}
 				else {
 					throw std::runtime_error(std::string("Invalid option '") + c + "'\n");
 				}
 			}
 
-
 			search = argv[2];
 			fileName = argv[3];
+			findFromFile(search, fileName, occurrences, lineNo, reverse, ignore);
 		}
 		else {
 			throw std::runtime_error(std::string("Invalid number of arguments. Usage: ") + argv[0] + (" <search_term> <filename> or no args\n"));
-		}
-
-		if (argc == 3 || argc == 4) {
-			findFromFile(search, fileName, showCount, lineNo);
-		}
-		
+		}		
 	}
 	catch (const std::exception& e) {
 		std::cerr << "Exception: " << e.what() << "\n"; 
