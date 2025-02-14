@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 		else if (argc == 4) {
 			std::string options = argv[1];
 			if (options.substr(0, 2) != "-o") {
-				throw std::runtime_error(std::string("Invalid option ") + options + "Use format -o... \n");
+				throw std::runtime_error(std::string("Invalid option '") + options + "' Use format -o... \n");
 			}
 			for (char c : options.substr(2)) {
 				if (c == 'o') occurrences = true;
